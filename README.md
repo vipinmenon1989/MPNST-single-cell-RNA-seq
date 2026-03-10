@@ -129,6 +129,7 @@ Seurat v5 is required (uses the split-layer architecture for batch integration).
 ## Author
 
 **Vipin Menon**
-PhD Candidate, Computational Biology (Genome Editing)
-Hanyang University, Seoul, South Korea
+Post doctoral Fellow, Computational Biology (Genome Editing), Wei Lei Lab
+University of Maryland, Baltimore
+University of Maryland-Institute of health computing 
 GitHub: [vipinmenon1989](https://github.com/vipinmenon1989)
