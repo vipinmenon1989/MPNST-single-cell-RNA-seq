@@ -14,6 +14,7 @@
 # ---------------------------------------------------------------------------
 
 suppressMessages(library(Seurat))
+suppressMessages(library(Matrix))
 
 set.seed(42)
 
@@ -25,7 +26,12 @@ out_path <- if (length(args) >= 1) args[[1]] else "aggregated_cellbender_filtere
 # below.
 n_genes <- 1000
 n_batches <- 3
-cells_per_batch <- 60
+# MPNST_RPCA_Integration.R hardcodes k.weight = 100 for RPCAIntegration, which
+# requires at least k.weight cells in the smallest batch/dataset being
+# integrated, or Seurat errors out during anchor weighting. Keep a healthy
+# margin above 100 per batch so the smoke test exercises that code path
+# instead of just failing on cell count.
+cells_per_batch <- 220
 n_cells <- n_batches * cells_per_batch
 
 # Gene names: a handful of mitochondrial genes (for percent.mt) + generic genes
@@ -44,7 +50,7 @@ counts[seq_along(mt_genes), ] <- matrix(
   rpois(length(mt_genes) * n_cells, lambda = 0.5),
   nrow = length(mt_genes)
 )
-counts <- as(counts, "CsparseMatrix")
+counts <- Matrix::Matrix(counts, sparse = TRUE)  # dgCMatrix, version-stable coercion
 
 batch_ids <- rep(paste0("batch", seq_len(n_batches)), each = cells_per_batch)
 lab_ids <- rep(c("LabA", "LabB", "LabC"), length.out = n_cells)
