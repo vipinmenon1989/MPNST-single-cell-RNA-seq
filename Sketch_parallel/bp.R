@@ -1,7 +1,7 @@
 library(BPCells)
 
 # 1. Open the MatrixDir
-mat <- open_matrix_dir("/autofs/projects-t3/lilab/vmenon/Zhu_MPNST/Sketch_parallel/counts_bpcells")
+mat <- open_matrix_dir("counts_bpcells")  # relative path, see r_metadata.R
 
 # 2. Corrected HDF5 Write
 # In the latest version, the argument is 'path', not 'file'

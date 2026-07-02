@@ -1,0 +1,17 @@
+# MPNST scRNA-seq Snakemake workflow configuration
+# ---------------------------------------------------
+# Path to the aggregated, CellBender-filtered Seurat RDS object that seeds
+# the whole pipeline (must contain 'orig.ident' and 'lab' metadata columns).
+input_rds: aggregated_cellbender_filtered.rds
+
+# Which batch-integration strategy to run after QC/preprocessing (MPNST.R):
+#   rpca             - MPNST_RPCA_Integration.R      (canonical; 30-40 hr on full data)
+#   sketch           - Sketch.R                       (single-process 50k-cell sketch + RPCA)
+#   sketch_parallel  - Sketch_parallel/main_pipeline.R (subprocess hand-off sketch + RPCA)
+#   fastmnn          - Sketch_parallel/FastMN.R        (sketch + FastMNN integration)
+integration: rpca
+
+# Only meaningful when integration: fastmnn. Runs the extended clustering +
+# annotation stage (Integrated_object_FastMNN/processed_reads/) on top of
+# the FastMNN-integrated object.
+run_clustering: false

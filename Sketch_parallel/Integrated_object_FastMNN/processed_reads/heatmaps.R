@@ -3,7 +3,9 @@ library(ggplot2)
 library(reshape2)
 
 # 1. INITIALIZE VARIABLES (Fixes 'object not found' errors)
-setwd("/local/projects-t3/lilab/vmenon/Zhu_MPNST/Sketch_parallel/Integrated_object_FastMNN/processed_reads/")
+# NOTE: run this script with its containing directory as the working
+# directory (the accompanying .slurm launcher / Snakemake rule does this)
+# rather than a hardcoded setwd(), so it is portable across machines.
 seurat_obj <- readRDS("seurat_obj_clustered_1M.rds")
 
 resolutions <- c("0.1", "0.2", "0.3", "0.4", "0.5", "0.6", "0.7", "0.8", "0.9", "1")

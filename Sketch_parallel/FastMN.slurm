@@ -13,6 +13,8 @@
 # -------------------------------------------------------------------------
 # LOGGING AND ENVIRONMENT SETUP
 # -------------------------------------------------------------------------
+mkdir -p logs
+
 echo "--- JOB STARTED AT $(date) ---"
 echo "Node: $(hostname)"
 echo "CPUs: $SLURM_CPUS_PER_TASK"

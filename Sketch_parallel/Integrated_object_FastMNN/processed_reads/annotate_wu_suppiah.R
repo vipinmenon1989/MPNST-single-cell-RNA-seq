@@ -2,8 +2,9 @@ library(Seurat)
 library(ggplot2)
 library(patchwork)
 
-# Set working directory
-setwd("/local/projects-t3/lilab/vmenon/Zhu_MPNST/Sketch_parallel/Integrated_object_FastMNN/processed_reads/")
+# NOTE: run this script with its containing directory as the working
+# directory (the accompanying .slurm launcher / Snakemake rule does this)
+# rather than a hardcoded setwd(), so it is portable across machines.
 
 # Load object
 seurat_obj <- readRDS("seurat_obj_clustered_1M.rds")

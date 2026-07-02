@@ -12,6 +12,8 @@
 
 # -------------------------
 
+mkdir -p logs
+
 echo "--- JOB STARTED AT $(date) ---"
 
 # Load Conda Environment
