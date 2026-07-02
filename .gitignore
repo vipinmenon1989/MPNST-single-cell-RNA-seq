@@ -3,3 +3,8 @@
 !*/
 !*.R
 !*.slurm
+!.gitkeep
+!Snakefile
+!*.yaml
+!*.yml
+!*.md

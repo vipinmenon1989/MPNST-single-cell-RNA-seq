@@ -12,6 +12,8 @@
 
 # -------------------------
 
+mkdir -p logs
+
 echo "--- JOB STARTED AT $(date) ---"
 source /local/projects-t3/lilab/vmenon/anaconda3/etc/profile.d/conda.sh
 conda activate R_env

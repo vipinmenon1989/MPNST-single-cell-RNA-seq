@@ -92,7 +92,7 @@ seurat_obj <- ProjectIntegration(
 )
 
 # 8. FINAL DIM REDUCTION & SAVE
-# -------------------------------------------------------------------------ls
+# -------------------------------------------------------------------------
 print("--- FINAL UMAP FOR 1M CELLS ---")
 seurat_obj <- RunUMAP(
   seurat_obj, 

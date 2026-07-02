@@ -1,3 +1,12 @@
+# NOTE: This script performs the same sketch + RPCA integration as Sketch.R,
+# but attempts an in-process toggle between sequential/multicore `future`
+# plans around the IntegrateLayers() call (see section 4) instead of
+# handing the integration step off to a separate Rscript subprocess like
+# Sketch_parallel/main_pipeline.R does. It was previously truncated
+# mid-expression (missing NoLegend() call, no final save) and would error
+# before completing; this has been fixed. Prefer Sketch.R (single-process)
+# or Sketch_parallel/main_pipeline.R (subprocess hand-off, most robust for
+# large objects) unless you specifically need this in-process variant.
 library(Seurat)
 library(ggplot2)
 library(patchwork)
@@ -122,4 +131,18 @@ p2 <- DimPlot(seurat_obj,
               label.size = 2, 
               repel = TRUE, 
               raster = FALSE) + 
-      NoLegend
+      NoLegend() + 
+      ggtitle("Integrated (Sketch-Projected, In-Process Parallel)") +
+      theme(plot.title = element_text(hjust = 0.5))
+
+ggsave("04_UMAP_Integrated_Sketch_InProcess.png", plot = p2, width = 16, height = 12, dpi = 300)
+print("--- INTEGRATED UMAP SAVED ---")
+
+
+# 7. SAVE FINAL CHECKPOINT
+# -------------------------------------------------------------------------
+print("--- SAVING INTEGRATED OBJECT (NO COMPRESSION) ---")
+# Always compress=FALSE for large objects on HPC
+saveRDS(seurat_obj, "seurat_obj_integrated_sketch_inprocess.rds", compress = FALSE)
+
+print("--- PIPELINE COMPLETED ---")

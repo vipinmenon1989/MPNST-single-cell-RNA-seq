@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  # ---------------------------------------------------------------------
+  # Fast, dependency-free checks: every .R file parses, every .slurm file
+  # is valid bash.
+  # ---------------------------------------------------------------------
+  syntax-check:
+    name: R / shell syntax check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+
+      - name: Parse every R script (base R only, no packages needed)
+        run: |
+          set -e
+          status=0
+          while IFS= read -r -d '' f; do
+            echo "Parsing: $f"
+            Rscript -e "tryCatch(parse(file='$f'), error = function(e) { cat('PARSE ERROR in $f:\n'); print(e); quit(status = 1) })" || status=1
+          done < <(find . -name "*.R" -print0)
+          exit $status
+
+      - name: Check every .slurm script is valid bash
+        run: |
+          set -e
+          status=0
+          while IFS= read -r -d '' f; do
+            echo "Checking: $f"
+            bash -n "$f" || status=1
+          done < <(find . -name "*.slurm" -print0)
+          exit $status
+
+  # ---------------------------------------------------------------------
+  # Validate the Snakemake DAG (no R/Seurat required) across every
+  # integration mode, using a placeholder input file.
+  # ---------------------------------------------------------------------
+  snakemake-dry-run:
+    name: Snakemake DAG validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Snakemake
+        run: |
+          python -m pip install --upgrade pip
+          pip install snakemake "pulp<2.8"
+
+      - name: Dry-run every integration mode
+        run: |
+          set -e
+          touch aggregated_cellbender_filtered.rds
+          for mode in rpca sketch sketch_parallel fastmnn; do
+            echo "=== integration: $mode ==="
+            snakemake --cores 1 -n --config integration=$mode
+          done
+          echo "=== fastmnn + run_clustering ==="
+          snakemake --cores 1 -n --config integration=fastmnn run_clustering=true
+
+      - name: Reject invalid config combinations
+        run: |
+          set -e
+          ! snakemake --cores 1 -n --config integration=rpca run_clustering=true
+          ! snakemake --cores 1 -n --config integration=bogus
+
+  # ---------------------------------------------------------------------
+  # Real end-to-end smoke test of the core pipeline (MPNST.R ->
+  # MPNST_RPCA_Integration.R) against a tiny synthetic fixture, via
+  # Snakemake + an actual R/Seurat install. This is the one job that
+  # exercises real Seurat code, not just syntax/DAG structure.
+  # ---------------------------------------------------------------------
+  smoke-test:
+    name: Core pipeline smoke test (synthetic data)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::Seurat
+            any::SeuratObject
+            any::ggplot2
+            any::patchwork
+            any::future
+            any::dplyr
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Snakemake
+        run: |
+          python -m pip install --upgrade pip
+          pip install snakemake "pulp<2.8"
+
+      - name: Generate synthetic test fixture
+        run: Rscript tests/make_test_fixture.R aggregated_cellbender_filtered.rds
+
+      - name: Run core pipeline via Snakemake (QC + RPCA integration)
+        run: snakemake --cores 2 --config integration=rpca
+
+      - name: Verify expected outputs were produced
+        run: |
+          for f in seurat_obj_pre_integration.rds \
+                   01_QC_Pre_Scatter_Uniform.png 01_QC_Pre_Filtering_Stats.csv \
+                   02_QC_Post_Scatter_Uniform.png 02_QC_Post_Filtering_Stats.csv \
+                   seurat_obj_integrated_rpca.rds \
+                   03_UMAP_Unintegrated.png 04_UMAP_Integrated_RPCA.png 05_Integration_Comparison.png; do
+            test -s "$f" || { echo "Missing or empty output: $f"; exit 1; }
+          done
+
+      - name: Upload smoke-test outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-outputs
+          path: |
+            *.png
+            *.csv
+            logs/
+          retention-days: 7

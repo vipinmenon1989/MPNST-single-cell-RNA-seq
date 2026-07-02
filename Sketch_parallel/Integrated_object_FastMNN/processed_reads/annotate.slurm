@@ -13,4 +13,4 @@ cd /local/projects-t3/lilab/vmenon/Zhu_MPNST/Sketch_parallel/Integrated_object_F
 source /local/projects-t3/lilab/vmenon/anaconda3/etc/profile.d/conda.sh
 conda activate R_env
 
-Rscript heatmaps.R
+Rscript annotate.R

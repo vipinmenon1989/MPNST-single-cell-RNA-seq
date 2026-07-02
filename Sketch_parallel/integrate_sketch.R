@@ -2,7 +2,7 @@ library(Seurat)
 library(future)
 
 # Use the 8 cores
-plan("multicore", workers = 1)
+plan("multicore", workers = 8)
 # Increased to 80GB to be safe, though DietSeurat should make the object tiny.
 options(future.globals.maxSize = 100 * 1024^3) 
 

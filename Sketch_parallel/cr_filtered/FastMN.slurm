@@ -13,6 +13,8 @@
 # -------------------------------------------------------------------------
 # LOGGING AND ENVIRONMENT SETUP
 # -------------------------------------------------------------------------
+mkdir -p /local/projects-t3/lilab/vmenon/Zhu_MPNST/Sketch_parallel/cr_filtered/logs
+
 echo "--- JOB STARTED AT $(date) ---"
 echo "Node: $(hostname)"
 echo "CPUs: $SLURM_CPUS_PER_TASK"
